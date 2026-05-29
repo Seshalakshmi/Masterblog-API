@@ -17,7 +17,6 @@ def validate_book_data(data):
         return "content is missing"
     return True
 
-
 @app.route('/api/posts', methods=['GET', 'POST'])
 def get_and_add_posts():
     if request.method == 'POST':
@@ -41,10 +40,6 @@ def get_and_add_posts():
 
         if not sort and not direction:
             return jsonify(POSTS), 200
-
-        if (sort != "title" or sort != "content" or direction != "asc" or
-                direction != "desc"):
-            return jsonify("Message: Provide valid input"), 404
 
         if sort == 'title' and direction == 'asc':
             sorted_list = sorted(POSTS, key=lambda post: post['title'])
