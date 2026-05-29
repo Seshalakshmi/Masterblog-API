@@ -1,8 +1,21 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
+from flask_swagger_ui import get_swaggerui_blueprint
 
 app = Flask(__name__)
 CORS(app)  # This will enable CORS for all routes
+
+SWAGGER_URL="/api/docs"  # (1) swagger endpoint e.g. HTTP://localhost:5002/api/docs
+API_URL="/static/masterblog.json" # (2) ensure you create this dir and file
+
+swagger_ui_blueprint = get_swaggerui_blueprint(
+    SWAGGER_URL,
+    API_URL,
+    config={
+        'app_name': 'Masterblog API' # (3) You can change this if you like
+    }
+)
+app.register_blueprint(swagger_ui_blueprint, url_prefix=SWAGGER_URL)
 
 POSTS = [
     {"id": 1, "title": "First post", "content": "This is the first post."},
@@ -59,6 +72,7 @@ def get_and_add_posts():
                                  reverse=True)
             return jsonify(sorted_list), 200
 
+        return jsonify("Message: Invalid sort fields or directions"), 400
 
 
 def find_post_by_id(post_id):
@@ -100,8 +114,8 @@ def delete_post(id):
 def search():
     title = request.args.get('title')
     content = request.args.get('content')
-    if not title and content:
-        return jsonify("Message: we need at least two parameters"), 404
+    if not title or not content:
+        return jsonify("Message: we need two parameters"), 404
 
     search_post = [post for post in POSTS
                    if title.lower() in post['title'].lower()
