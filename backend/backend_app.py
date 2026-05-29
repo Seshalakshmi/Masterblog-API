@@ -9,12 +9,14 @@ POSTS = [
     {"id": 2, "title": "Second post", "content": "This is the second post."},
 ]
 
+
 def validate_book_data(data):
     if "title" not in data:
         return "title is missing"
     elif "content" not in data:
         return "content is missing"
     return True
+
 
 @app.route('/api/posts', methods=['GET', 'POST'])
 def get_and_add_posts():
@@ -32,7 +34,34 @@ def get_and_add_posts():
         new_post['id'] = post_id
         POSTS.append(new_post)
         return jsonify(new_post), 201
-    return jsonify(POSTS), 200
+
+    elif request.method == "GET":
+        sort = request.args.get('sort')
+        direction = request.args.get('direction')
+
+        if (sort != "title" or sort != "content" or direction != "asc" or
+                direction != "desc"):
+            return jsonify("Message: Provide valid input"), 404
+
+        if sort == 'title' and direction == 'asc':
+            sorted_list = sorted(POSTS, key=lambda post: post['title'])
+            return jsonify(sorted_list), 200
+
+        if sort == 'title' and direction == 'desc':
+            sorted_list = sorted(POSTS, key=lambda post: post['title'],
+                                 reverse=True)
+            return jsonify(sorted_list), 200
+
+        if sort == 'content' and direction == 'asc':
+            sorted_list = sorted(POSTS, key=lambda post: post['content'])
+            return jsonify(sorted_list), 200
+
+        if sort == 'content' and direction == 'desc':
+            sorted_list = sorted(POSTS, key=lambda post: post['content'],
+                                 reverse=True)
+            return jsonify(sorted_list), 200
+
+        return jsonify(POSTS), 200
 
 
 def find_post_by_id(post_id):
@@ -50,7 +79,8 @@ def delete_post(id):
             return jsonify(f"Message: Post {id} was not found"), 404
 
         POSTS.remove(deleted_post)
-        return jsonify(f"message: Post with id {id} has been deleted successfully."), 200
+        return jsonify(
+            f"message: Post with id {id} has been deleted successfully."), 200
 
     elif request.method == "PUT":
         post = find_post_by_id(id)
@@ -69,9 +99,22 @@ def delete_post(id):
         return jsonify(update_post), 200
 
 
+@app.route("/api/posts/search", methods=["GET"])
+def search():
+    title = request.args.get('title')
+    content = request.args.get('content')
+    if not title and content:
+        return jsonify("Message: we need at least two parameters"), 404
+
+    search_post = [post for post in POSTS
+                   if title.lower() in post['title'].lower()
+                   and content.lower() in post['content'].lower()]
+
+    return jsonify(search_post), 200
+
 
 @app.errorhandler(400)
-def not_found_error(error):
+def invalid_error(error):
     return jsonify({"error": "Invalid post data"}), 400
 
 
