@@ -33,6 +33,20 @@ def get_and_add_posts():
     return jsonify(POSTS)
 
 
+def find_post_by_id(post_id):
+    for post in POSTS:
+        if post['id'] == post_id:
+            return post
+    return None
+
+
+@app.route('/api/posts/<id>', methods=["DELETE"])
+def delete_post(post_id):
+    deleted_post = find_post_by_id(post_id)
+    POSTS.remove(deleted_post)
+
+    return jsonify(POSTS)
+
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5002, debug=True)
