@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from flask_cors import CORS
 
 app = Flask(__name__)
@@ -9,10 +9,29 @@ POSTS = [
     {"id": 2, "title": "Second post", "content": "This is the second post."},
 ]
 
+def validate_book_data(data):
+    if "title" not in data or "content" not in data:
+        return False
+    return True
 
-@app.route('/api/posts', methods=['GET'])
-def get_posts():
+@app.route('/api/posts', methods=['GET', 'POST'])
+def get_and_add_posts():
+    if request.method == 'POST':
+        if not POSTS:
+            post_id = 1
+        else:
+            post_id = POSTS[-1]['id'] + 1
+
+        new_post = request.get_json()
+
+        if not validate_book_data(new_post):
+            return jsonify({"error": "Invalid post data"}), 400
+
+        new_post['id'] = post_id
+        POSTS.append(new_post)
+        return jsonify(new_post), 201
     return jsonify(POSTS)
+
 
 
 if __name__ == '__main__':
