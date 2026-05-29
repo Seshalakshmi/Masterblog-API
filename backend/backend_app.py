@@ -46,11 +46,10 @@ def find_post_by_id(post_id):
 def delete_post(id):
     deleted_post = find_post_by_id(id)
     if not deleted_post:
-        return jsonify({f"Message: Post {id} is not found"}), 404
+        return jsonify(f"Message: Post {id} was not found"), 404
     POSTS.remove(deleted_post)
 
-    return jsonify(
-        {f"message: Post with id {id} has been deleted successfully."}), 200
+    return jsonify(f"message: Post with id {id} has been deleted successfully."), 200
 
 
 @app.errorhandler(400)
