@@ -42,14 +42,32 @@ def find_post_by_id(post_id):
     return None
 
 
-@app.route('/api/posts/<int:id>', methods=["DELETE"])
+@app.route('/api/posts/<int:id>', methods=["DELETE", "PUT"])
 def delete_post(id):
-    deleted_post = find_post_by_id(id)
-    if not deleted_post:
-        return jsonify(f"Message: Post {id} was not found"), 404
-    POSTS.remove(deleted_post)
+    if request.method == "DELETE":
+        deleted_post = find_post_by_id(id)
+        if not deleted_post:
+            return jsonify(f"Message: Post {id} was not found"), 404
 
-    return jsonify(f"message: Post with id {id} has been deleted successfully."), 200
+        POSTS.remove(deleted_post)
+        return jsonify(f"message: Post with id {id} has been deleted successfully."), 200
+
+    elif request.method == "PUT":
+        post = find_post_by_id(id)
+        if not post:
+            return jsonify(f"Message: Post {id} was not found"), 404
+
+        get_json = request.get_json()
+        update_post = {
+            "id": id,
+            "title": get_json.get("title", post["title"]),
+            "content": get_json.get("content", post["content"])
+        }
+
+        post.update(update_post)
+
+        return jsonify(update_post), 200
+
 
 
 @app.errorhandler(400)
